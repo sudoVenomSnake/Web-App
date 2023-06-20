@@ -23,7 +23,7 @@ from llama_index.query_engine import RetrieverQueryEngine
 # import nest_asyncio
 
 # nest_asyncio.apply()
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = os.getenv('API_KEY')
 query_engine_tools = []
 
 import asyncio
