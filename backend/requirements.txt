@@ -6,3 +6,4 @@ pypdf
 fastapi 
 uvicorn 
 prisma
+passlib

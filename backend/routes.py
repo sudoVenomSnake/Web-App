@@ -4,7 +4,6 @@ from fastapi.responses import Response, JSONResponse
 from prisma import Prisma
 from passlib.context import CryptContext
 from pydantic import BaseModel
-import jwt
 import uvicorn
 
 prisma = Prisma()
