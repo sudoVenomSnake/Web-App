@@ -9,7 +9,6 @@ from passlib.context import CryptContext
 prisma = Prisma()
 app = FastAPI()
 
-
 class UserCreate(BaseModel):
     name: str
     email: str
