@@ -9,6 +9,17 @@ import uvicorn
 
 prisma = Prisma()
 app = FastAPI()
+
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,11 +39,6 @@ async def shutdown_event():
 async def root():
     res = Response("Api is up and running!!", status_code=200)
     return res
-
-class UserCreate(BaseModel):
-    name: str
-    email: str
-    password: str
 
 @app.post('/signup')
 async def signup(user: UserCreate):
@@ -56,6 +62,20 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str):
     return pwd_context.hash(password)
+
+def verify_password(password: str, hashed_password: str):
+    return pwd_context.verify(password, hashed_password)
+
+@app.post("/login")
+async def login(user: UserLogin):
+
+    stored_user = await prisma.user.find_first(where={"email": user.email})
+    if not stored_user or not verify_password(user.password, stored_user.password):
+        return {"message": "Invalid credentials"}
+    return {"message": "Logged in successfully"}
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 if __name__ == "__main__":
     uvicorn.run("routes:app",port=8000, reload=True)
