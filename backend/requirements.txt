@@ -8,3 +8,4 @@ uvicorn
 prisma
 passlib
 bcrypt
+PyJWT==2.6.0
