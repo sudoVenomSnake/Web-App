@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel
 from prisma import Prisma
+import uvicorn
 
 prisma = Prisma()
 app = FastAPI()
@@ -31,15 +32,50 @@ class SignupRequest(BaseModel):
     password: str
     name: str
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 @app.post('/signup')
 async def signup(request: SignupRequest):
-    _user = prisma.user.create(
+    check = await prisma.user.find_unique(
         data={
-            'name': request.name,
-            'email': request.email,
-            'password': request.password
+            'email': request.email
         }
     )
-    res = Response("Signup Successful", status_code=201)
-    return res
+    if check is not None:
+        return Response("User already exsists", status_code=400)
+    
+    try:
+        user = await prisma.user.create(
+            data={
+                'name': request.name,
+                'email': request.email,
+                'password': request.password
+            }
+        )
+        return Response("Signup Successful", status_code=201)
+    except Exception as e: 
+        return Response(e, status_code=500)
+    
 
+@app.post('/login')
+async def login(request: LoginRequest):
+    auth = await prisma.user.find_unique(
+        where={
+            'email': request.email,
+        }
+    )
+
+    if(auth is None): 
+       return Response("Account not present please signup", status_code=400)
+    
+    if(auth['password']!=request.password):
+        return Response("Incorrect credentials", status_code=400)
+    
+    return Response("Login successful !!", status_code=200)
+
+       
+
+if __name__ == "__main__":
+    uvicorn.run("routes:app",port=8000, reload=True)
