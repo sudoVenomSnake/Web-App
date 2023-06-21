@@ -8,6 +8,17 @@ from passlib.context import CryptContext
 
 prisma = Prisma()
 app = FastAPI()
+
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -84,3 +95,26 @@ async def login(request: LoginRequest):
     return JSONResponse({"message":"Login successful !!"}, status_code=200)
 
 
+
+pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
+
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
+def verify_password(password: str, hashed_password: str):
+    return pwd_context.verify(password, hashed_password)
+
+@app.post("/login")
+async def login(user: UserLogin):
+
+    stored_user = await prisma.user.find_first(where={"email": user.email})
+    if not stored_user or not verify_password(user.password, stored_user.password):
+        return JSONResponse({"message": "Invalid Credentials"}, status_code=400)
+    return JSONResponse({"message": "Logged in successfully"}, status_code=200)
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+if __name__ == "__main__":
+    uvicorn.run("routes:app",port=8000, reload=True)
