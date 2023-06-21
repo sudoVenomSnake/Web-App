@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import Response,JSONResponse
 from pydantic import BaseModel
 from prisma import Prisma
 import uvicorn
@@ -24,8 +24,7 @@ async def shutdown_event():
 
 @app.get("/")
 async def root():
-    res = Response("Api is up and running!!", status_code=200)
-    return res
+    return JSONResponse({"message":"Api is running !!"}, status_code=200)
 
 class SignupRequest(BaseModel):
     email: str
@@ -39,12 +38,12 @@ class LoginRequest(BaseModel):
 @app.post('/signup')
 async def signup(request: SignupRequest):
     check = await prisma.user.find_unique(
-        data={
+        where={
             'email': request.email
         }
     )
     if check is not None:
-        return Response("User already exsists", status_code=400)
+        return JSONResponse({"message": "User already exists"}, status_code=400)
     
     try:
         user = await prisma.user.create(
@@ -54,9 +53,9 @@ async def signup(request: SignupRequest):
                 'password': request.password
             }
         )
-        return Response("Signup Successful", status_code=201)
+        return JSONResponse({"message":"Signup Successful"}, status_code=201)
     except Exception as e: 
-        return Response(e, status_code=500)
+        return JSONResponse({"message":e}, status_code=500)
     
 
 @app.post('/login')
@@ -67,13 +66,13 @@ async def login(request: LoginRequest):
         }
     )
 
-    if(auth is None): 
-       return Response("Account not present please signup", status_code=400)
+    if auth is None: 
+       return JSONResponse({"message":"Account not present please signup"}, status_code=400)
     
     if(auth['password']!=request.password):
-        return Response("Incorrect credentials", status_code=400)
+        return JSONResponse({"message":"Incorrect credentials"}, status_code=400)
     
-    return Response("Login successful !!", status_code=200)
+    return JSONResponse({"message":"Login successful !!"}, status_code=200)
 
        
 
