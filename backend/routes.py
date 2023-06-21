@@ -4,6 +4,7 @@ from fastapi.responses import Response,JSONResponse
 from pydantic import BaseModel
 from prisma import Prisma
 import uvicorn
+from passlib.context import CryptContext
 
 prisma = Prisma()
 app = FastAPI()
@@ -35,8 +36,17 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
+def verify_password(password: str, hashed_password: str):
+    return pwd_context.verify(password, hashed_password)
+
 @app.post('/signup')
 async def signup(request: SignupRequest):
+    hashed_password = get_password_hash(request.password)
     check = await prisma.user.find_unique(
         where={
             'email': request.email
@@ -50,14 +60,13 @@ async def signup(request: SignupRequest):
             data={
                 'name': request.name,
                 'email': request.email,
-                'password': request.password
+                'password': hashed_password
             }
         )
         return JSONResponse({"message":"Signup Successful"}, status_code=201)
     except Exception as e: 
         return JSONResponse({"message":e}, status_code=500)
     
-
 @app.post('/login')
 async def login(request: LoginRequest):
     auth = await prisma.user.find_unique(
@@ -69,12 +78,9 @@ async def login(request: LoginRequest):
     if auth is None: 
        return JSONResponse({"message":"Account not present please signup"}, status_code=400)
     
-    if(auth['password']!=request.password):
+    if not verify_password(request.password, auth.password):
         return JSONResponse({"message":"Incorrect credentials"}, status_code=400)
     
     return JSONResponse({"message":"Login successful !!"}, status_code=200)
 
-       
 
-if __name__ == "__main__":
-    uvicorn.run("routes:app",port=8000, reload=True)
