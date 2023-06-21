@@ -27,7 +27,7 @@ model MessageGroup {
 
 model Message {
   messageID      Int     @id @default(autoincrement())
-  created_at     DateTime   @default(now())
+  updated_at     DateTime   @default(now())
   created_by     Int
   content_message String    @db.VarChar(255)
   groupID        Int
