@@ -10,7 +10,6 @@ import jwt
 import os
 from passlib.context import CryptContext
 
-
 prisma = Prisma()
 app = FastAPI()
 
