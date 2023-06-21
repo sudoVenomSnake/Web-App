@@ -3,3 +3,6 @@ streamlit
 langchain
 openai
 pypdf
+fastapi 
+uvicorn 
+prisma
