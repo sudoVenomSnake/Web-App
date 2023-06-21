@@ -9,33 +9,12 @@ from passlib.context import CryptContext
 prisma = Prisma()
 app = FastAPI()
 
-class UserCreate(BaseModel):
-    name: str
-    email: str
-    password: str
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-@app.on_event("startup")
-async def startup_event():
-    await prisma.connect()
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await prisma.disconnect()
-
-@app.get("/")
-async def root():
-    return JSONResponse({"message":"Api is running !!"}, status_code=200)
 
 class SignupRequest(BaseModel):
     email: str
@@ -53,6 +32,18 @@ def get_password_hash(password: str):
 
 def verify_password(password: str, hashed_password: str):
     return pwd_context.verify(password, hashed_password)
+
+@app.on_event("startup")
+async def startup_event():
+    await prisma.connect()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await prisma.disconnect()
+
+@app.get("/")
+async def root():
+    return JSONResponse({"message":"Api is running !!"}, status_code=200)
 
 @app.post('/signup')
 async def signup(request: SignupRequest):
@@ -92,27 +83,6 @@ async def login(request: LoginRequest):
         return JSONResponse({"message":"Incorrect credentials"}, status_code=400)
     
     return JSONResponse({"message":"Login successful !!"}, status_code=200)
-
-
-
-pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
-
-
-def get_password_hash(password: str):
-    return pwd_context.hash(password)
-
-def verify_password(password: str, hashed_password: str):
-    return pwd_context.verify(password, hashed_password)
-
-@app.post("/login")
-async def login(user: UserLogin):
-
-    stored_user = await prisma.user.find_first(where={"email": user.email})
-    if not stored_user or not verify_password(user.password, stored_user.password):
-        return JSONResponse({"message": "Invalid Credentials"}, status_code=400)
-    return JSONResponse({"message": "Logged in successfully"}, status_code=200)
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 if __name__ == "__main__":
