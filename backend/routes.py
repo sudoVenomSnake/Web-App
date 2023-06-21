@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from prisma import Prisma
 from passlib.context import CryptContext
 from pydantic import BaseModel
@@ -57,7 +57,7 @@ async def signup(user: UserCreate):
     res = Response("Signup Successful", status_code=201)
     return res
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
 
 
 def get_password_hash(password: str):
@@ -71,8 +71,8 @@ async def login(user: UserLogin):
 
     stored_user = await prisma.user.find_first(where={"email": user.email})
     if not stored_user or not verify_password(user.password, stored_user.password):
-        return {"message": "Invalid credentials"}
-    return {"message": "Logged in successfully"}
+        return JSONResponse({"message": "Invalid Credentials"}, status_code=400)
+    return JSONResponse({"message": "Logged in successfully"}, status_code=200)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
