@@ -9,4 +9,4 @@ prisma
 jwt 
 passlib
 pinecone-client
-google-search-rsults
+google-search-results
