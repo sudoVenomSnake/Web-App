@@ -1,5 +1,4 @@
 llama-index
-streamlit
 langchain
 openai
 pypdf
@@ -10,3 +9,6 @@ jwt
 passlib
 pinecone-client
 google-search-results
+huggingface_hub
+bs4
+transformers 
