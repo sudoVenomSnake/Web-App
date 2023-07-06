@@ -148,4 +148,4 @@ def run(question):
     print(response)
 
 preprocessing_prelimnary('AI Bot', 'AI Assistant for answering questions.')
-run('How did tejas feel when he was resigning')
+run('When Did Tejas Resign')
