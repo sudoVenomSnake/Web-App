@@ -2,13 +2,8 @@ llama-index
 langchain
 openai
 pypdf
-fastapi 
+fastapi
 uvicorn 
-prisma
-jwt 
-passlib
-pinecone-client
 google-search-results
 huggingface_hub
 bs4
-transformers 
