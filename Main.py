@@ -60,7 +60,7 @@ def preprocessing_prelimnary(name = "", description = ""):
         file_path = os.path.join(temp_dir, uploaded_file)
         file_paths.append(file_path)
     
-    for file_path in file_paths[1:]:
+    for file_path in file_paths:
         document = SimpleDirectoryReader(input_files=[file_path]).load_data()
         index = TreeIndex.from_documents(document)
         engine = index.as_query_engine(similarity_top_k = 3)
